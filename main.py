@@ -1,3 +1,5 @@
+print("Script is starting...")
+
 from viewer.viewer import Viewer
 
 if __name__ == "__main__":
