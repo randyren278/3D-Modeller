@@ -1,11 +1,11 @@
 import numpy
 import random
 from OpenGL.GL import *
-from utils.colors import color
+from utils.colors import COLORS, MIN_COLOR, MAX_COLOR
 
 class Node(object):
     def __init__(self):
-        self.color_index = random.randint(color.MIN_COLOR, color.MAX_COLOR)
+        self.color_index = random.randint(MIN_COLOR, MAX_COLOR)
         self.translation_matrix = numpy.identity(4)
         self.scaling_matrix = numpy.identity(4)
         self.selected = False
@@ -15,7 +15,7 @@ class Node(object):
         glPushMatrix()
         glMultMatrixf(numpy.transpose(self.translation_matrix))
         glMultMatrixf(self.scaling_matrix)
-        cur_color = color.COLORS[self.color_index]
+        cur_color = COLORS[self.color_index]
         glColor3f(cur_color[0], cur_color[1], cur_color[2])
         if self.selected:
             glMaterialfv(GL_FRONT, GL_EMISSION, [0.3, 0.3, 0.3])
