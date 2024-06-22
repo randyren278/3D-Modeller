@@ -3,6 +3,9 @@ import random
 from OpenGL.GL import *
 from utils.colors import COLORS, MIN_COLOR, MAX_COLOR
 
+print("Node module loaded")
+
+
 class Node(object):
     def __init__(self):
         self.color_index = random.randint(MIN_COLOR, MAX_COLOR)
