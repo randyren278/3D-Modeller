@@ -1,4 +1,5 @@
 from models.primitive import Primitive
+from OpenGL.GL import *
 
 class Cube(Primitive):
     def __init__(self):
@@ -27,9 +28,9 @@ class Cube(Primitive):
         glVertex3f( 1.0,  1.0, -1.0)
         # Bottom Face
         glVertex3f(-1.0, -1.0, -1.0)
-        glVertex3f( 1.0, -1.0, -1.0)
-        glVertex3f( 1.0, -1.0,  1.0)
         glVertex3f(-1.0, -1.0,  1.0)
+        glVertex3f( 1.0, -1.0,  1.0)
+        glVertex3f( 1.0, -1.0, -1.0)
         # Right face
         glVertex3f( 1.0, -1.0, -1.0)
         glVertex3f( 1.0,  1.0, -1.0)

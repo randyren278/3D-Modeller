@@ -1,6 +1,15 @@
+import numpy
 from models.node import Node
 from models.sphere import Sphere
-import numpy
+from utils.aabb import AABB
+from utils.colors import MIN_COLOR
+
+def scaling(scale):
+    s = numpy.identity(4)
+    s[0, 0] = scale[0]
+    s[1, 1] = scale[1]
+    s[2, 2] = scale[2]
+    return s
 
 class SnowFigure(Node):
     def __init__(self):

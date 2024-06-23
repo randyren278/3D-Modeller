@@ -1,27 +1,27 @@
-import numpy
 from OpenGL.GL import *
+from OpenGL.GLU import gluPerspective, gluUnProject
 from OpenGL.GLUT import *
-from OpenGL.GLU import *
-from models.scene import Scene
-from models.cube import Cube
-from models.sphere import Sphere
-from models.snowfigure import SnowFigure
+import numpy
+from numpy.linalg import norm, inv
 from viewer.interaction import Interaction
-from utils.trackball import Trackball
-from utils.colors import COLORS
+from viewer.primitive import init_primitives, G_OBJ_PLANE
+from models.sphere import Sphere
+from models.cube import Cube
+from models.snowfigure import SnowFigure
+from models.scene import Scene
 
 class Viewer(object):
     def __init__(self):
         """ Initialize the viewer. """
         self.init_interface()
         self.init_opengl()
-        self.init_primitives()  # Add this line to initialize display lists
+        init_primitives()
+        print("Viewer initialization complete. G_OBJ_PLANE:", G_OBJ_PLANE)
         self.init_scene()
         self.init_interaction()
 
-
     def init_interface(self):
-        """ Initialize the window and register the render function """
+        """ initialize the window and register the render function """
         glutInit()
         glutInitWindowSize(640, 480)
         glutCreateWindow("3D Modeller")
@@ -29,7 +29,7 @@ class Viewer(object):
         glutDisplayFunc(self.render)
 
     def init_opengl(self):
-        """ Initialize the OpenGL settings to render the scene """
+        """ initialize the opengl settings to render the scene """
         self.inverseModelView = numpy.identity(4)
         self.modelView = numpy.identity(4)
 
@@ -47,15 +47,14 @@ class Viewer(object):
         glClearColor(0.4, 0.4, 0.4, 0.0)
 
     def init_scene(self):
-        """ Initialize the scene object and initial scene """
+        """ initialize the scene object and initial scene """
         self.scene = Scene()
         self.create_sample_scene()
 
     def create_sample_scene(self):
-        """ Create a sample scene with basic shapes """
         cube_node = Cube()
         cube_node.translate(2, 0, 2)
-        cube_node.color_index = 2
+        cube_node.color_index = 1
         self.scene.add_node(cube_node)
 
         sphere_node = Sphere()
@@ -68,13 +67,16 @@ class Viewer(object):
         self.scene.add_node(hierarchical_node)
 
     def init_interaction(self):
-        """ Initialize user interaction and callbacks """
+        """ init user interaction and callbacks """
         self.interaction = Interaction()
         self.interaction.register_callback('pick', self.pick)
         self.interaction.register_callback('move', self.move)
         self.interaction.register_callback('place', self.place)
         self.interaction.register_callback('rotate_color', self.rotate_color)
         self.interaction.register_callback('scale', self.scale)
+
+    def main_loop(self):
+        glutMainLoop()
 
     def render(self):
         """ The render pass for the scene """
@@ -83,6 +85,7 @@ class Viewer(object):
         glEnable(GL_LIGHTING)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
+        # Load the modelview matrix from the current state of the trackball
         glMatrixMode(GL_MODELVIEW)
         glPushMatrix()
         glLoadIdentity()
@@ -90,22 +93,32 @@ class Viewer(object):
         glTranslated(loc[0], loc[1], loc[2])
         glMultMatrixf(self.interaction.trackball.matrix)
 
+        # store the inverse of the current modelview.
         currentModelView = numpy.array(glGetFloatv(GL_MODELVIEW_MATRIX))
         self.modelView = numpy.transpose(currentModelView)
-        self.inverseModelView = numpy.linalg.inv(numpy.transpose(currentModelView))
+        self.inverseModelView = inv(numpy.transpose(currentModelView))
 
+        # render the scene. This will call the render function for each object in the scene
         self.scene.render()
 
+        # draw the grid
         glDisable(GL_LIGHTING)
-        glCallList(G_OBJ_PLANE)
+        if G_OBJ_PLANE is not None:
+            glCallList(G_OBJ_PLANE)
+        else:
+            print("G_OBJ_PLANE is None in render()")
+
         glPopMatrix()
+
+        # flush the buffers so that the scene can be drawn
         glFlush()
 
     def init_view(self):
-        """ Initialize the projection matrix """
+        """ initialize the projection matrix """
         xSize, ySize = glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT)
         aspect_ratio = float(xSize) / float(ySize)
 
+        # load the projection matrix. Always the same
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
 
@@ -113,10 +126,34 @@ class Viewer(object):
         gluPerspective(70, aspect_ratio, 0.1, 1000.0)
         glTranslated(0, 0, -15)
 
+    def get_ray(self, x, y):
+        """ Generate a ray beginning at the near plane, in the direction that the x, y coordinates are facing
+            Consumes: x, y coordinates of mouse on screen
+            Return: start, direction of the ray """
+        self.init_view()
+
+        glMatrixMode(GL_MODELVIEW)
+        glLoadIdentity()
+
+        # get two points on the line.
+        start = numpy.array(gluUnProject(x, y, 0.001))
+        end = numpy.array(gluUnProject(x, y, 0.999))
+
+        # convert those points into a ray
+        direction = end - start
+        direction = direction / norm(direction)
+
+        return (start, direction)
+
     def pick(self, x, y):
         """ Execute pick of an object. Selects an object in the scene. """
         start, direction = self.get_ray(x, y)
         self.scene.pick(start, direction, self.modelView)
+
+    def place(self, shape, x, y):
+        """ Execute a placement of a new primitive into the scene. """
+        start, direction = self.get_ray(x, y)
+        self.scene.place(shape, start, direction, self.inverseModelView)
 
     def move(self, x, y):
         """ Execute a move command on the scene. """
@@ -128,45 +165,5 @@ class Viewer(object):
         self.scene.rotate_selected_color(forward)
 
     def scale(self, up):
-        """ Scale the selected Node. Boolean up indicates scaling larger. """
+        """ Scale the selected Node. Boolean up indicates scaling larger."""
         self.scene.scale_selected(up)
-
-    def place(self, shape, x, y):
-        """ Execute a placement of a new primitive into the scene. """
-        start, direction = self.get_ray(x, y)
-        self.scene.place(shape, start, direction, self.inverseModelView)
-
-    def get_ray(self, x, y):
-        """ Generate a ray beginning at the near plane, in the direction that the x, y coordinates are facing """
-        self.init_view()
-
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
-
-        start = numpy.array(gluUnProject(x, y, 0.001))
-        end = numpy.array(gluUnProject(x, y, 0.999))
-
-        direction = end - start
-        direction = direction / numpy.linalg.norm(direction)
-
-        return (start, direction)
-
-    def main_loop(self):
-        glutMainLoop()
-        
-    def init_primitives(self):
-        """ Initialize display lists for primitives """
-        global G_OBJ_PLANE
-        G_OBJ_PLANE = glGenLists(1)
-        glNewList(G_OBJ_PLANE, GL_COMPILE)
-        glBegin(GL_LINES)
-        for i in range(-10, 11):
-            glVertex3f(i, 0, -10)
-            glVertex3f(i, 0, 10)
-            glVertex3f(-10, 0, i)
-            glVertex3f(10, 0, i)
-        glEnd()
-        glEndList()
-
-
-

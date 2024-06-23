@@ -1,21 +1,25 @@
-import sys
-import os
+#! /usr/bin/env python
+from OpenGL.GL import *
+from OpenGL.GLU import gluPerspective, gluUnProject
+from OpenGL.GLUT import *
 
-# Add the current directory and the 'viewer' directory to the sys.path
-sys.path.append(os.path.dirname(__file__))
-sys.path.append(os.path.join(os.path.dirname(__file__), 'viewer'))
+import numpy
+from numpy.linalg import norm, inv
 
-print("Script is starting...")
+from viewer.viewer import Viewer
 
-try:
-    from viewer.viewer import Viewer
-    print("Successfully imported Viewer from viewer.viewer")
-except ImportError as e:
-    print(f"Error importing Viewer: {e}")
-    sys.exit(1)
+def main():
+    print("Script is starting...")
+    try:
+        print("Initializing viewer...")
+        viewer = Viewer()
+        print("Viewer initialized successfully.")
+        print("Starting main loop...")
+        viewer.main_loop()
+    except Exception as e:
+        print("An error occurred during initialization or execution:")
+        print(str(e))
+    print("Script finished.")
 
 if __name__ == "__main__":
-    print("Starting the viewer...")
-    viewer = Viewer()
-    viewer.main_loop()
-    print("Viewer started.")
+    main()

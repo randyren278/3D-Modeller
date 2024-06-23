@@ -1,4 +1,5 @@
 from models.node import Node
+from OpenGL.GL import *
 
 class Primitive(Node):
     def __init__(self):
