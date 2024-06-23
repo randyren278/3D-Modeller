@@ -1,4 +1,8 @@
 from models.node import Node
+from models.cube import Cube
+from models.sphere import Sphere
+from models.snowfigure import SnowFigure
+import numpy
 
 class Scene(object):
     PLACE_DEPTH = 15.0

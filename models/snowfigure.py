@@ -1,8 +1,8 @@
 from models.node import Node
 from models.sphere import Sphere
-from models.primitives import HierarchicalNode
+import numpy
 
-class SnowFigure(HierarchicalNode):
+class SnowFigure(Node):
     def __init__(self):
         super(SnowFigure, self).__init__()
         self.child_nodes = [Sphere(), Sphere(), Sphere()]
@@ -14,5 +14,9 @@ class SnowFigure(HierarchicalNode):
         self.child_nodes[2].scaling_matrix = numpy.dot(
             self.scaling_matrix, scaling([0.7, 0.7, 0.7]))
         for child_node in self.child_nodes:
-            child_node.color_index = color.MIN_COLOR
+            child_node.color_index = MIN_COLOR
         self.aabb = AABB([0.0, 0.0, 0.0], [0.5, 1.1, 0.5])
+    
+    def render_self(self):
+        for child in self.child_nodes:
+            child.render()
