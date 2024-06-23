@@ -1,28 +1,30 @@
-import numpy as np
+import numpy
+import math
 
-class Trackball:
-    def __init__(self, theta=0, distance=5):
+class Trackball(object):
+    def __init__(self, theta=0.0, phi=0.0, distance=1.0):
         self.theta = theta
+        self.phi = phi
         self.distance = distance
-        self.matrix = np.identity(4)
+        self.matrix = self._create_rotation_matrix()
 
-    def drag_to(self, old_x, old_y, new_x, new_y):
-        # Implement drag logic to update the matrix for rotation
-        # This is a placeholder for actual implementation
-        dx = new_x - old_x
-        dy = new_y - old_y
-        angle = np.sqrt(dx * dx + dy * dy) / self.distance
-        self.matrix = self._rotation_matrix(angle, dx, dy) @ self.matrix
+    def drag_to(self, x0, y0, dx, dy):
+        self.theta += dy * 0.2
+        self.phi += dx * 0.2
+        self.matrix = self._create_rotation_matrix()
 
-    def _rotation_matrix(self, angle, dx, dy):
-        # Create a rotation matrix given an angle and a vector (dx, dy)
-        c, s = np.cos(angle), np.sin(angle)
-        axis = np.array([dx, dy, 0])
-        axis = axis / np.linalg.norm(axis)
-        x, y, z = axis
-        return np.array([
-            [c + (1 - c) * x * x, (1 - c) * x * y - s * z, (1 - c) * x * z + s * y, 0],
-            [(1 - c) * y * x + s * z, c + (1 - c) * y * y, (1 - c) * y * z - s * x, 0],
-            [(1 - c) * z * x - s * y, (1 - c) * z * y + s * x, c + (1 - c) * z * z, 0],
-            [0, 0, 0, 1]
+    def _create_rotation_matrix(self):
+        theta = math.radians(self.theta)
+        phi = math.radians(self.phi)
+
+        cos_t, sin_t = math.cos(theta), math.sin(theta)
+        cos_p, sin_p = math.cos(phi), math.sin(phi)
+
+        rotation_matrix = numpy.array([
+            [cos_p, -sin_p * cos_t, sin_p * sin_t, 0.0],
+            [sin_p, cos_p * cos_t, -cos_p * sin_t, 0.0],
+            [0.0, sin_t, cos_t, 0.0],
+            [0.0, 0.0, 0.0, 1.0]
         ])
+
+        return rotation_matrix

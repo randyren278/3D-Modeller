@@ -1,6 +1,5 @@
-# utils/colors.py
+print("Loading colors module...")
 
-# Example color definitions
 COLORS = [
     (1.0, 0.0, 0.0),  # Red
     (0.0, 1.0, 0.0),  # Green
@@ -10,3 +9,5 @@ COLORS = [
 
 MIN_COLOR = 0
 MAX_COLOR = len(COLORS) - 1
+
+print("Colors module loaded")
