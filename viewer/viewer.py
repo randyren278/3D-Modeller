@@ -8,7 +8,7 @@ from models.sphere import Sphere
 from models.snowfigure import SnowFigure
 from viewer.interaction import Interaction
 from utils.trackball import Trackball
-from utils.colors import color
+from utils.colors import COLORS
 
 class Viewer(object):
     def __init__(self):
