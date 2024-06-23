@@ -1,6 +1,6 @@
-from collections import defaultdict
+import numpy
 from OpenGL.GLUT import *
-from utils.trackball import Trackball
+from collections import defaultdict
 
 class Interaction(object):
     def __init__(self):
@@ -10,6 +10,7 @@ class Interaction(object):
         self.trackball = Trackball(theta=-25, distance=15)
         self.mouse_loc = None
         self.callbacks = defaultdict(list)
+
         self.register()
 
     def register(self):
@@ -18,6 +19,12 @@ class Interaction(object):
         glutMotionFunc(self.handle_mouse_move)
         glutKeyboardFunc(self.handle_keystroke)
         glutSpecialFunc(self.handle_keystroke)
+
+    def translate(self, x, y, z):
+        """ Translate the camera """
+        self.translation[0] += x
+        self.translation[1] += y
+        self.translation[2] += z
 
     def handle_mouse_button(self, button, mode, x, y):
         """ Called when the mouse button is pressed or released """
@@ -29,11 +36,11 @@ class Interaction(object):
             self.pressed = button
             if button == GLUT_RIGHT_BUTTON:
                 pass
-            elif button == GLUT_LEFT_BUTTON:  # Pick
+            elif button == GLUT_LEFT_BUTTON:  # pick
                 self.trigger('pick', x, y)
-            elif button == 3:  # Scroll up
+            elif button == 3:  # scroll up
                 self.translate(0, 0, 1.0)
-            elif button == 4:  # Scroll down
+            elif button == 4:  # scroll down
                 self.translate(0, 0, -1.0)
         else:  # Mouse button release
             self.pressed = None
@@ -52,8 +59,6 @@ class Interaction(object):
                 self.trigger('move', x, y)
             elif self.pressed == GLUT_MIDDLE_BUTTON:
                 self.translate(dx / 60.0, dy / 60.0, 0)
-            else:
-                pass
             glutPostRedisplay()
         self.mouse_loc = (x, y)
 
@@ -81,9 +86,3 @@ class Interaction(object):
     def trigger(self, name, *args, **kwargs):
         for func in self.callbacks[name]:
             func(*args, **kwargs)
-
-    def translate(self, x, y, z):
-        """ Translate the camera """
-        self.translation[0] += x
-        self.translation[1] += y
-        self.translation[2] += z
