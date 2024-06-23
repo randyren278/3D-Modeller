@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import sys
 import os
 
@@ -13,6 +14,11 @@ try:
 except ImportError as e:
     print(f"Error importing Viewer: {e}")
     sys.exit(1)
+=======
+print("Script is starting...")
+
+from viewer.viewer import Viewer
+>>>>>>> 46e23fdcf5bc0bda441a75d40b641eb56b65226a
 
 if __name__ == "__main__":
     print("Starting the viewer...")
