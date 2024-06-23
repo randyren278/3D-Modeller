@@ -69,4 +69,10 @@ Make sure you have the required Python packages installed. You can install them 
 ```bash
 pip install -r requirements.txt
 
+python -m venv env
+
+.\env\Scripts\activate (for win)
+
+source env/bin/activate (for mac)
+
 python main.py
