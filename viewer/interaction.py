@@ -5,7 +5,7 @@ class Interaction(object):
     def __init__(self):
         self.pressed = None
         self.translation = [0, 0, 0, 0]
-        self.trackball = Trackball()
+        self.trackball = Trackball()  # Initialize Trackball here
         self.mouse_loc = None
         self.callbacks = {}
 

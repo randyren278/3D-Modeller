@@ -3,12 +3,12 @@ from OpenGL.GLU import gluPerspective, gluUnProject
 from OpenGL.GLUT import *
 import numpy
 from numpy.linalg import norm, inv
-from viewer.interaction import Interaction
-from viewer.primitive import init_primitives, G_OBJ_PLANE
+from viewer.primitive import init_primitives, G_OBJ_PLANE, G_OBJ_AXIS
 from models.sphere import Sphere
 from models.cube import Cube
 from models.snowfigure import SnowFigure
 from models.scene import Scene
+
 
 class Viewer(object):
     def __init__(self):
@@ -25,7 +25,7 @@ class Viewer(object):
         glutInit()
         glutInitWindowSize(640, 480)
         glutCreateWindow("3D Modeller")
-        glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB)
+        glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH)
         glutDisplayFunc(self.render)
 
     def init_opengl(self):
@@ -68,6 +68,7 @@ class Viewer(object):
 
     def init_interaction(self):
         """ init user interaction and callbacks """
+        from viewer.interaction import Interaction  # Import here to avoid circular import issue
         self.interaction = Interaction()
         self.interaction.register_callback('pick', self.pick)
         self.interaction.register_callback('move', self.move)
@@ -101,17 +102,17 @@ class Viewer(object):
         # render the scene. This will call the render function for each object in the scene
         self.scene.render()
 
-        # draw the grid
+        # draw the grid and axis
         glDisable(GL_LIGHTING)
         if G_OBJ_PLANE is not None:
             glCallList(G_OBJ_PLANE)
-        else:
-            print("G_OBJ_PLANE is None in render()")
+        if G_OBJ_AXIS is not None:
+            glCallList(G_OBJ_AXIS)
 
         glPopMatrix()
 
         # flush the buffers so that the scene can be drawn
-        glFlush()
+        glutSwapBuffers()
 
     def init_view(self):
         """ initialize the projection matrix """
@@ -128,22 +129,28 @@ class Viewer(object):
 
     def get_ray(self, x, y):
         """ Generate a ray beginning at the near plane, in the direction that the x, y coordinates are facing
-            Consumes: x, y coordinates of mouse on screen
-            Return: start, direction of the ray """
+        Consumes: x, y coordinates of mouse on screen
+        Return: start, direction of the ray """
         self.init_view()
 
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
 
-        # get two points on the line.
-        start = numpy.array(gluUnProject(x, y, 0.001))
-        end = numpy.array(gluUnProject(x, y, 0.999))
+        # Ensure that we get the proper array types
+        modelview = glGetFloatv(GL_MODELVIEW_MATRIX)
+        projection = glGetFloatv(GL_PROJECTION_MATRIX)
+        viewport = glGetIntegerv(GL_VIEWPORT)
+
+        #  get two points on the line.
+        start = gluUnProject(x, y, 0.001, modelview, projection, viewport)
+        end = gluUnProject(x, y, 0.999, modelview, projection, viewport)
 
         # convert those points into a ray
-        direction = end - start
-        direction = direction / norm(direction)
+        direction = numpy.subtract(end, start)
+        direction = direction / numpy.linalg.norm(direction)
 
-        return (start, direction)
+        return (numpy.array(start), numpy.array(direction))
+
 
     def pick(self, x, y):
         """ Execute pick of an object. Selects an object in the scene. """
@@ -167,3 +174,8 @@ class Viewer(object):
     def scale(self, up):
         """ Scale the selected Node. Boolean up indicates scaling larger."""
         self.scene.scale_selected(up)
+
+
+if __name__ == "__main__":
+    viewer = Viewer()
+    viewer.main_loop()
