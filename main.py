@@ -1,18 +1,16 @@
-#! /usr/bin/env python
+import sys
+sys.setrecursionlimit(2000)
 
-def main():
-    print("Script is starting...")
-    try:
-        from viewer.viewer import Viewer
-        print("Initializing viewer...")
-        viewer = Viewer()
-        print("Viewer initialized successfully.")
-        print("Starting main loop...")
-        viewer.main_loop()
-    except Exception as e:
-        print(f"An error occurred during initialization or execution:\n{e}")
-    finally:
-        print("Script finished.")
+print("Script is starting...")
 
-if __name__ == "__main__":
-    main()
+try:
+    from viewer import Viewer
+    print("Initializing viewer...")
+    viewer = Viewer()
+    print("Starting main loop...")
+    viewer.main_loop()
+except Exception as e:
+    print("An error occurred during initialization or execution:")
+    print(e)
+
+print("Script finished.")
