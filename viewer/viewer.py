@@ -15,8 +15,10 @@ class Viewer(object):
         """ Initialize the viewer. """
         self.init_interface()
         self.init_opengl()
+        self.init_primitives()  # Add this line to initialize display lists
         self.init_scene()
         self.init_interaction()
+
 
     def init_interface(self):
         """ Initialize the window and register the render function """
@@ -151,3 +153,20 @@ class Viewer(object):
 
     def main_loop(self):
         glutMainLoop()
+        
+    def init_primitives(self):
+        """ Initialize display lists for primitives """
+        global G_OBJ_PLANE
+        G_OBJ_PLANE = glGenLists(1)
+        glNewList(G_OBJ_PLANE, GL_COMPILE)
+        glBegin(GL_LINES)
+        for i in range(-10, 11):
+            glVertex3f(i, 0, -10)
+            glVertex3f(i, 0, 10)
+            glVertex3f(-10, 0, i)
+            glVertex3f(10, 0, i)
+        glEnd()
+        glEndList()
+
+
+
