@@ -60,6 +60,11 @@ This 3D modeller program allows you to create, manipulate, and view 3D objects i
 - Implements a virtual trackball for intuitive camera control.
 - Handles rotation, zoom, and pan based on mouse movements.
 
+## Visuals
+<img width="1256" alt="Screenshot 2024-06-24 at 4 55 14 PM" src="https://github.com/randyren278/3D-Modeller/assets/150431360/5bb71c40-56c3-4578-a3b4-85a6f03a1a6c">
+<img width="1234" alt="Screenshot 2024-06-24 at 4 56 03 PM" src="https://github.com/randyren278/3D-Modeller/assets/150431360/8d0c68b1-d733-4d5d-a1eb-1078fe819379">
+
+
 ## Running the Program
 
 ### Prerequisites
